@@ -28,9 +28,9 @@ class GuruController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:150',
-            'nip' => 'required|string|max:50|unique:guru,nip',
-            'username' => 'required|string|max:100|unique:guru,username',
-            'password' => 'required|string|max:255',
+            'nip' => 'nullable|string|max:50|unique:guru,nip',
+            'username' => 'nullable|string|max:100|unique:guru,username',
+            'password' => 'nullable|string|max:255',
             'kelas_wali' => 'nullable|string|max:50',
             'is_wali_kelas' => 'boolean',
             'id_rfid' => 'nullable|string|max:100|unique:guru,id_rfid',
@@ -61,9 +61,9 @@ class GuruController extends Controller
 
         $validated = $request->validate([
             'nama' => 'sometimes|required|string|max:150',
-            'nip' => 'sometimes|required|string|max:50|unique:guru,nip,' . $id . ',id_guru',
-            'username' => 'sometimes|required|string|max:100|unique:guru,username,' . $id . ',id_guru',
-            'password' => 'sometimes|required|string|max:255',
+            'nip' => 'nullable|string|max:50|unique:guru,nip,' . $id . ',id_guru',
+            'username' => 'nullable|string|max:100|unique:guru,username,' . $id . ',id_guru',
+            'password' => 'nullable|string|max:255',
             'kelas_wali' => 'nullable|string|max:50',
             'is_wali_kelas' => 'boolean',
             'id_rfid' => 'nullable|string|max:100|unique:guru,id_rfid,' . $id . ',id_guru',

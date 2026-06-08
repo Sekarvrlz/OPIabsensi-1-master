@@ -429,8 +429,14 @@ class IotController extends Controller
                 }
                 $catatan = $catatan . ' (' . $shiftName . ' - ' . ($shiftType ?? 'masuk') . ')';
             } else {
-                $shiftName = $this->nearestShiftName($jadwal->getShifts(), $jamSekarang);
-                $catatan = $catatan . ' (Di luar jam shift)';
+                $lateInfo = $this->lateShiftInfo($jadwal->getShifts(), $jamSekarang);
+                if ($lateInfo !== null) {
+                    $shiftName = $lateInfo['shift_name'];
+                    $catatan = $catatan . ' (Terlambat - ' . $shiftName . ')';
+                } else {
+                    $shiftName = $this->nearestShiftName($jadwal->getShifts(), $jamSekarang);
+                    $catatan = $catatan . ' (Di luar jam shift)';
+                }
             }
 
             $shiftStatus = $validation['allowed'] ? 'in_shift' : 'outside_shift';
@@ -555,6 +561,41 @@ class IotController extends Controller
         return $sqlState === '23000'
             || $errorCode === 1062
             || str_contains($message, 'presensi_shift_entry_unique');
+    }
+
+    private function lateShiftInfo(array $shifts, string $time): ?array
+    {
+        $timeTs = strtotime($time);
+        $lateShift = null;
+        $latestMasukAkhir = null;
+
+        foreach ($shifts as $index => $shift) {
+            if (! is_array($shift)) {
+                continue;
+            }
+
+            $masukAkhir = strtotime((string) ($shift['masuk_akhir'] ?? ''));
+            if ($masukAkhir === false || $timeTs <= $masukAkhir) {
+                continue;
+            }
+
+            $pulangAwal = strtotime((string) ($shift['pulang_awal'] ?? ''));
+            $pulangAkhir = strtotime((string) ($shift['pulang_akhir'] ?? ''));
+            if ($pulangAwal !== false && $pulangAkhir !== false && $timeTs >= $pulangAwal && $timeTs <= $pulangAkhir) {
+                continue;
+            }
+
+            if ($latestMasukAkhir === null || $masukAkhir > $latestMasukAkhir) {
+                $latestMasukAkhir = $masukAkhir;
+                $name = trim((string) ($shift['nama'] ?? '')) ?: 'Shift ' . ($index + 1);
+                $lateShift = [
+                    'shift_name' => $name,
+                    'shift_index' => $index + 1,
+                ];
+            }
+        }
+
+        return $lateShift;
     }
 
     private function findJadwalForHari(string $hari): ?JadwalMengajar

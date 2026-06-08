@@ -23,7 +23,7 @@ Route::middleware(['bearer.token'])->group(function (): void {
     Route::apiResource('jadwal', JadwalMengajarController::class);
     
     // Presensi Logs
-    Route::apiResource('presensi', PresensiController::class)->only(['index', 'show', 'update', 'destroy']);
+    Route::apiResource('presensi', PresensiController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 
     // IoT Admin
     Route::get('/iot-admin/devices', [IotAdminController::class, 'devices']);
